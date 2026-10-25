@@ -8948,12 +8948,8 @@ fn ordinary_prose_before_a_display_equation_keeps_its_own_line() {
     let math = wordcraft_doc::math::Math { nodes: wordcraft_doc::math::parse_linear("a>=b"), ..Default::default() };
     p.insert_object(eq_at, InlineObject::Equation { linear: "a>=b".into(), display: true, math }, &Default::default()).unwrap();
     let l = lay(&d);
-    let n: usize = l
-        .pages
-        .iter()
-        .flat_map(|pg| pg.items.iter())
-        .map(|it| if let Placed::Lines { para, .. } = it { para.lines.len() } else { 0 })
-        .sum();
+    let n: usize =
+        l.pages.iter().flat_map(|pg| pg.items.iter()).map(|it| if let Placed::Lines { para, .. } = it { para.lines.len() } else { 0 }).sum();
     assert!(n >= 2, "the formula stays on the prose line ({n} lines)");
     let prose = l.caret(&Pos::body(0, 0)).unwrap();
     let eq = l.caret(&Pos::body(0, eq_at)).unwrap();
@@ -8973,7 +8969,14 @@ fn display_eq(linear: &str, jc: wordcraft_doc::math::MathJc) -> InlineObject {
 fn a_long_caption_wraps_and_a_side_justified_formula_stays_put() {
     use wordcraft_doc::math::MathJc;
     use wordcraft_doc::para::{PTabAlign, PTabBase};
-    let lines_of = |d: &Document| lay(d).pages.iter().flat_map(|pg| pg.items.iter()).filter(|it| matches!(it, Placed::Lines { .. })).count();
+    let lines_of = |d: &Document| {
+        lay(d)
+            .pages
+            .iter()
+            .flat_map(|pg| pg.items.iter())
+            .map(|it| if let Placed::Lines { para, .. } = it { para.lines.len() } else { 0 })
+            .sum::<usize>()
+    };
     let wide = wordcraft_doc::props::CharProps { size: Some(72.0), ..Default::default() };
     let mut long_prefix = Document::from_text("");
     let p = long_prefix.para_mut(StoryRef::Body, &Path::top(0)).unwrap();
